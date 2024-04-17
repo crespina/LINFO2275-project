@@ -1,8 +1,16 @@
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 from part_I import markovDecision
 
 nSquares = 15
+nSimul = 10_000
+
+###############################################################################
+###############################################################################
+############################### PLAY THE GAME #################################
+###############################################################################
+###############################################################################
 
 def playOneTurn(diceChoice, curPos, layout, circle, prison):
     """
@@ -78,11 +86,11 @@ def playOneTurn(diceChoice, curPos, layout, circle, prison):
                     return newPos, True  # prison
 
 
-def playOneGame(layout, circle, policy):
+def playOneGame(layout, circle, policy, start=0):
 
     # start of the game
     nTurns = 0
-    curPos = 0
+    curPos = start
     prison = False
 
     if circle:
@@ -105,23 +113,166 @@ def playOneGame(layout, circle, policy):
             )
             curPos = newPos
             nTurns += 1
+
     return nTurns
 
+
+###############################################################################
+###############################################################################
+################################ COMPARISONS ##################################
+###############################################################################
+###############################################################################
+
+def empiric_cost_of_square(layout, circle, policy):
+
+    expected_costs = np.zeros(nSquares)
+
+    for start_square in range(nSquares):
+
+        total_turns = 0
+        for _ in range(nSimul):
+            total_turns += playOneGame(layout, circle, policy, start=start_square)
+
+        expected_costs[start_square] = total_turns / nSimul
+
+    return expected_costs
 
 def empirical_results(layout, circle, policy):
 
     avgnTurnsPlayed = 0
 
-    for _ in range (1000) :
+    for _ in range (nSimul) :
         nTurns = playOneGame(layout, circle, policy)
-        avgnTurnsPlayed += nTurns / 1000
+        avgnTurnsPlayed += nTurns
 
-    return avgnTurnsPlayed
+    return avgnTurnsPlayed / nSimul
 
-layout = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-circle = False
-expec, dice = markovDecision(layout, circle)
-dice = np.array([2, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1])
 
-avgnTurns = empirical_results(layout, circle, dice.astype(int))
-print(avgnTurns)
+def comparison_theorical_empirical(layout, circle):
+
+    expec, optimal_policy = markovDecision(layout, circle)
+    actual = empiric_cost_of_square(layout,circle,optimal_policy.astype(int))
+
+    # Generating x-axis values (squares)
+    squares = np.arange(len(expec))
+
+    # Plotting both arrays on the same plot
+    plt.plot(squares, expec, label="Theoretical cost")
+    plt.plot(squares, actual, label="Empirical cost")
+
+    plt.xticks(np.arange(0, len(expec), step=1))
+
+    # Adding grid and labels
+    plt.grid(True)
+    plt.xlabel("Square")
+    plt.ylabel("Cost")
+
+    # Adding legend
+    plt.legend()
+    plt.title("Comparison between the exepected cost and the actual cost")
+
+    # Displaying the plot
+    plt.show()
+
+
+def comparison_of_policies_total(layout, circle):
+
+    policies = []
+
+    _, optimal_policy = markovDecision(layout, circle)
+    policies.append(optimal_policy.astype(int))
+
+    only_dice_risky = np.ones(nSquares, dtype=int)*3
+    only_dice_normal = np.ones(nSquares, dtype=int) * 2
+    only_dice_safe = np.ones(nSquares,dtype=int)
+    rand = np.zeros(nSquares, dtype=int)
+    for i in range(nSquares-1):
+        rand[i] = random.choice([1,2,3])
+
+    policies.append(only_dice_safe)
+    policies.append(only_dice_normal)
+    policies.append(only_dice_risky)
+    policies.append(rand)
+
+    avgnTurns = []
+
+    for policy in policies:
+        avgnTurns.append(empirical_results(layout, circle, policy))
+
+    names = ["optimal", "safe", "normal", "risky", "random"]
+
+    # Creating the bar plot
+    plt.bar(names, avgnTurns)
+
+    # Adding labels and title
+    plt.xlabel("Bar Name")
+    plt.ylabel("Cost")
+    plt.title("Expected number of turns for a policy")
+
+    # Displaying the plot
+    plt.show()
+
+
+def comparison_of_policies_squares(layout, circle):
+
+    policies = []
+
+    _, optimal_policy = markovDecision(layout, circle)
+    policies.append(optimal_policy.astype(int))
+
+    only_dice_risky = np.ones(nSquares, dtype=int) * 3
+    only_dice_normal = np.ones(nSquares, dtype=int) * 2
+    only_dice_safe = np.ones(nSquares, dtype=int)
+    rand = np.zeros(nSquares, dtype=int)
+    for i in range(nSquares - 1):
+        rand[i] = random.choice([1, 2, 3])
+
+    policies.append(only_dice_safe)
+    policies.append(only_dice_normal)
+    policies.append(only_dice_risky)
+    policies.append(rand)
+
+    avgnTurns = []
+
+    for policy in policies:
+        avgnTurns.append(empiric_cost_of_square(layout, circle, policy))
+
+    # Generating x-axis values (squares)
+    squares = np.arange(len(avgnTurns[0]))
+
+    # Plotting both arrays on the same plot
+    plt.plot(squares, avgnTurns[0], label="Optimal")
+    plt.plot(squares, avgnTurns[1], label="Safe")
+    plt.plot(squares, avgnTurns[2], label="Normal")
+    plt.plot(squares, avgnTurns[3], label="Risky")
+    plt.plot(squares, avgnTurns[4], label="Random")
+
+    plt.xticks(np.arange(0, len(avgnTurns[0]), step=1))
+
+    # Adding grid and labels
+    plt.grid(True)
+    plt.xlabel("Square")
+    plt.ylabel("Cost")
+
+    # Adding legend
+    plt.legend()
+    plt.title("Expected cost for different policies")
+
+    # Displaying the plot
+    plt.show()
+
+###############################################################################
+###############################################################################
+################################## PLOTS ######################################
+###############################################################################
+###############################################################################
+
+def make_plots() :
+
+    layout = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    circle = False
+    comparison_theorical_empirical(layout, circle)
+    comparison_of_policies_total(layout,circle)
+    comparison_of_policies_squares(layout, circle)
+
+make_plots()

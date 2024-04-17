@@ -71,8 +71,3 @@ def markovDecision(layout,circle):
         )
 
     return newValue, dice + 1
-
-
-val, dice = markovDecision([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], False)
-print(val)
-print(dice)

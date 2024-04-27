@@ -92,10 +92,18 @@ def playOneGame(layout, circle, policy, start=0):
     nTurns = 0
     curPos = start
     prison = False
-
+    
+    if (layout[start] == 3):
+        if (policy[start] == 3):
+            prison = True
+        if (policy[start] == 2):
+            prison = random.choice([True,False])
+    
     if circle:
 
         while curPos != nSquares - 1:
+
+
 
             newPos, prison = playOneTurn(
                 diceChoice=policy[curPos], curPos=curPos, layout=layout, circle=circle, prison=prison
@@ -108,6 +116,7 @@ def playOneGame(layout, circle, policy, start=0):
     else :
 
         while curPos < nSquares - 1:
+            
             newPos, prison = playOneTurn(
                 diceChoice=policy[curPos], curPos=curPos, layout=layout, circle=circle, prison=prison
             )
@@ -153,6 +162,8 @@ def comparison_theorical_empirical(layout, circle):
     expec, optimal_policy = markovDecision(layout, circle)
     actual = empiric_cost_of_square(layout,circle,optimal_policy.astype(int))
 
+    print(optimal_policy)
+
     # Generating x-axis values (squares)
     squares = np.arange(len(expec))
 
@@ -169,7 +180,7 @@ def comparison_theorical_empirical(layout, circle):
 
     # Adding legend
     plt.legend()
-    plt.title("Comparison between the exepected cost and the actual cost")
+    plt.title("Comparison between the expected cost and the actual cost")
 
     # Displaying the plot
     plt.show()
@@ -205,9 +216,9 @@ def comparison_of_policies_total(layout, circle):
     plt.bar(names, avgnTurns)
 
     # Adding labels and title
-    plt.xlabel("Bar Name")
+    plt.xlabel("Policy")
     plt.ylabel("Cost")
-    plt.title("Expected number of turns for a policy")
+    plt.title("Expected number of turns by policy")
 
     # Displaying the plot
     plt.show()
@@ -269,10 +280,10 @@ def comparison_of_policies_squares(layout, circle):
 
 def make_plots() :
 
-    layout = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    layout = [0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 3, 0, 0, 0]
     circle = False
     comparison_theorical_empirical(layout, circle)
-    comparison_of_policies_total(layout,circle)
-    comparison_of_policies_squares(layout, circle)
+    #comparison_of_policies_total(layout,circle)
+    #comparison_of_policies_squares(layout, circle)
 
 make_plots()

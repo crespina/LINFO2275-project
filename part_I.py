@@ -4,16 +4,18 @@ import copy
 from proba import proba_security_dice, proba_normal_dice, proba_risky_dice
 
 nSquares = 15
+precision = 1e-9
 
 """
+ [0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 3, 0, 0, 0]
 layout : 
 ___________________________________________________________________
-|  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  14  |
+|  0  |  1  |  2  |  3  |  4  |  5P  |  6  |  7  |  8  |  9P  |  14  |
 |_____|_____|_____|_____|_____|_____|_____|_____|_____|_____|______|
               \                                                / 
                \                                              /   
            _____\____________________________________________/____
-          |    10      |      11      |      12      |     13     |
+          |    10      |      11  P    |      12      |     13     |
           |____________|______________|______________|____________|                    
 
 
@@ -47,27 +49,36 @@ def markovDecision(layout,circle):
                                   excluding the goal square. Again, the vector starts at index 0 (square 1) and ends at index 13 (square 14).
 
     """
-    proba_security, prison_security = proba_security_dice()
+    proba_security = proba_security_dice()
     proba_normal, prison_normal = proba_normal_dice(layout,circle)
     proba_risky, prison_risky = proba_risky_dice(layout,circle)
 
     value = np.zeros(nSquares)
     newValue = np.array([8.5,7.5,6.5,7,6,5,4,3,2,1,4,3,2,1,0])
 
-    while (sum(abs(newValue-value)) > 1e-9):
+    while (sum(abs(newValue-value)) > precision):
         value = copy.deepcopy(newValue)
         for i in range (nSquares-1):
-            newValue[i] = 1 + min(np.dot(proba_security[i],value) + np.dot(prison_security[i],value), np.dot(proba_normal[i],value) + np.dot(prison_normal[i],value), np.dot(proba_risky[i],value) + np.dot(prison_risky[i],value))
+            newValue[i] = 1 + min(
+                np.dot(proba_security[i], value),
+                np.dot(proba_normal[i] + prison_normal[i], value),
+                np.dot(proba_risky[i] + prison_risky[i], value),
+            )
         newValue[nSquares-1] = min(np.dot(proba_security[nSquares-1],value), np.dot(proba_normal[nSquares-1],value), np.dot(proba_risky[nSquares-1],value))
 
     dice = np.zeros(15, dtype=float)
     for i in range (nSquares):
         dice[i] = np.argmin(
             [
-                np.dot(proba_security[i], newValue) + np.dot(prison_security[i], newValue),
-                np.dot(proba_normal[i], newValue) + np.dot(prison_normal[i], newValue),
-                np.dot(proba_risky[i], newValue) + np.dot(prison_risky[i], newValue),
+                np.dot(proba_security[i], newValue),
+                np.dot(proba_normal[i] + prison_normal[i], newValue),
+                np.dot(proba_risky[i] + prison_risky[i], newValue)
             ]
         )
 
     return newValue, dice + 1
+
+
+layout = [0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 3, 0, 0, 0]
+circle = False
+_, optimal_policy = markovDecision(layout, circle)

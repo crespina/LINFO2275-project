@@ -94,17 +94,16 @@ def playOneGame(layout, circle, policy, start=0):
     prison = False
     
     #i thought this was the problem but it doesnt make sense that the expected cost of square 0 be impacted by that
+    """
     if (layout[start] == 3):
         if (policy[start] == 3):
             prison = True
         if (policy[start] == 2):
             prison = random.choice([True,False])
-    
+    """
     if circle:
 
         while curPos != nSquares - 1:
-
-
 
             newPos, prison = playOneTurn(
                 diceChoice=policy[curPos], curPos=curPos, layout=layout, circle=circle, prison=prison

@@ -61,8 +61,8 @@ def markovDecision(layout,circle):
         for i in range (nSquares-1):
             newValue[i] = 1 + min(
                 np.dot(proba_security[i], value),
-                np.dot(proba_normal[i] + prison_normal[i], value),
-                np.dot(proba_risky[i] + prison_risky[i], value),
+                np.dot(proba_normal[i], value) + sum(prison_normal[i]),
+                np.dot(proba_risky[i], value)+ sum(prison_risky[i])
             )
         newValue[nSquares-1] = min(np.dot(proba_security[nSquares-1],value), np.dot(proba_normal[nSquares-1],value), np.dot(proba_risky[nSquares-1],value))
 
@@ -71,8 +71,8 @@ def markovDecision(layout,circle):
         dice[i] = np.argmin(
             [
                 np.dot(proba_security[i], newValue),
-                np.dot(proba_normal[i] + prison_normal[i], newValue),
-                np.dot(proba_risky[i] + prison_risky[i], newValue)
+                np.dot(proba_normal[i], newValue) + sum(prison_normal[i]),
+                np.dot(proba_risky[i], newValue) + sum(prison_risky[i]),
             ]
         )
 

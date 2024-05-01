@@ -163,8 +163,6 @@ def comparison_theorical_empirical(layout, circle):
     actual = empiric_cost_of_square(layout, circle, optimal_policy.astype(int), nSimul)
     expec = np.append(expec,0)
 
-    print(optimal_policy)
-
     # Generating x-axis values (squares)
     squares = np.arange(len(expec))
 
@@ -195,8 +193,6 @@ def comparison_theorical_empirical_multiple_simul(layout, circle):
     nSimuls = [10,100,1000,10000]
     for nSimul in nSimuls:
         actual.append(empiric_cost_of_square(layout,circle,optimal_policy.astype(int),nSimul))
-
-    print(optimal_policy)
 
     # Generating x-axis values (squares)
     squares = np.arange(len(expec))
@@ -234,8 +230,6 @@ def comparison_theorical_empirical_loss_square(layout, circle):
             empiric_cost_of_square(layout, circle, optimal_policy.astype(int), nSimul)
         )
 
-    print(optimal_policy)
-
     # Generating x-axis values (squares)
     squares = np.arange(len(expec))
 
@@ -270,8 +264,7 @@ def comparison_theorical_empirical_loss_total(layout, circle):
         actual.append(
             empiric_cost_of_square(layout, circle, optimal_policy.astype(int), nSimul)
         )
-
-    print(optimal_policy)
+        
 
     names = ["10", "100", "1000", "10 000", "100 000"]
     loss = []
@@ -406,3 +399,4 @@ def make_plots_policies():
     comparison_of_policies_squares(layout, circle)
 
 make_plots_policies()
+

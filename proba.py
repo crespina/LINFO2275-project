@@ -122,14 +122,14 @@ def proba_normal_dice(layout, circle):
 
                 case 4:  # mystery
 
-                    proba[i][j] /= 2  # don't activate the trap
-
-                    if j != 0:
-                        proba[i][0] += proba[i][j] / 6  # trap restart
+                    # if j != 0:
+                    proba[i][0] += proba[i][j] / 6  # trap restart
 
                     proba[i][j - 3 if j - 3 >= 0 else 0] += proba[i][j] / 6 # trap minus 3
 
-                    proba_prison[i][j] = proba[i][j] / 6  # trap prison
+                    proba_prison[i][j] += proba[i][j] / 6  # trap prison
+
+                    proba[i][j] *= 4 / 6  # don't activate the trap + prison
 
     proba[nSquares - 1][nSquares - 1] = 1
 
@@ -246,14 +246,15 @@ def proba_risky_dice(layout, circle):
                 case 3:  # prison
                     proba_prison[i][j] = proba[i][j]
 
-                case 4:  # mystery
+                case 4:  # mystery : 1 out of 3 traps
 
                     if j != 0:
                         proba[i][0] += proba[i][j] / 3  # trap restart
 
                     proba[i][j - 3 if j - 3 >= 0 else 0] += proba[i][j] / 3 # trap minus 3
 
-                    proba_prison[i][j] = proba[i][j] / 3  # trap prison
+                    proba_prison[i][j] += proba[i][j] / 3  # trap prison
+                    
                     proba[i][j] /= 3
 
     proba[nSquares - 1][nSquares - 1] = 1

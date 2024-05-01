@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from part_I import markovDecision
 
 nSquares = 15
-nSimul = 10_000
+nSimul = 20_000
 
 ###############################################################################
 ###############################################################################
@@ -132,7 +132,7 @@ def playOneGame(layout, circle, policy, start=0):
 ###############################################################################
 ###############################################################################
 
-def empiric_cost_of_square(layout, circle, policy):
+def empiric_cost_of_square(layout, circle, policy, nSimul):
 
     expected_costs = np.zeros(nSquares)
 
@@ -160,7 +160,8 @@ def empirical_results(layout, circle, policy):
 def comparison_theorical_empirical(layout, circle):
 
     expec, optimal_policy = markovDecision(layout, circle)
-    actual = empiric_cost_of_square(layout,circle,optimal_policy.astype(int))
+    actual = empiric_cost_of_square(layout, circle, optimal_policy.astype(int), nSimul)
+    expec = np.append(expec,0)
 
     print(optimal_policy)
 
@@ -186,6 +187,113 @@ def comparison_theorical_empirical(layout, circle):
     plt.show()
 
 
+def comparison_theorical_empirical_multiple_simul(layout, circle):
+
+    expec, optimal_policy = markovDecision(layout, circle)
+    expec = np.append(expec, 0)
+    actual = []
+    nSimuls = [10,100,1000,10000]
+    for nSimul in nSimuls:
+        actual.append(empiric_cost_of_square(layout,circle,optimal_policy.astype(int),nSimul))
+
+    print(optimal_policy)
+
+    # Generating x-axis values (squares)
+    squares = np.arange(len(expec))
+
+    # Plotting both arrays on the same plot
+    plt.plot(squares, expec, label="Theoretical cost")
+    plt.plot(squares, actual[0], label="Empirical cost with 10 simulations")
+    plt.plot(squares, actual[1], label="Empirical cost with 100 simulations")
+    plt.plot(squares, actual[2], label="Empirical cost with 1000 simulations")
+    plt.plot(squares, actual[3], label="Empirical cost with 10000 simulations")
+
+    plt.xticks(np.arange(0, len(expec), step=1))
+
+    # Adding grid and labels
+    plt.grid(True)
+    plt.xlabel("Square")
+    plt.ylabel("Cost")
+
+    # Adding legend
+    plt.legend()
+    plt.title("Comparison between the expected cost and the actual cost")
+
+    # Displaying the plot
+    plt.show()
+
+
+def comparison_theorical_empirical_loss_square(layout, circle):
+
+    expec, optimal_policy = markovDecision(layout, circle)
+    expec = np.append(expec, 0)
+    actual = []
+    nSimuls = [10, 100, 1000, 10000]
+    for nSimul in nSimuls:
+        actual.append(
+            empiric_cost_of_square(layout, circle, optimal_policy.astype(int), nSimul)
+        )
+
+    print(optimal_policy)
+
+    # Generating x-axis values (squares)
+    squares = np.arange(len(expec))
+
+    # Plotting both arrays on the same plot
+    plt.plot(squares, abs(expec - actual[0]), label="Loss with 10 simulations")
+    plt.plot(squares, abs(expec - actual[1]), label="Loss with 100 simulations")
+    plt.plot(squares, abs(expec - actual[2]), label="Loss with 1000 simulations")
+    plt.plot(squares, abs(expec - actual[3]), label="Loss with 10000 simulations")
+
+    plt.xticks(np.arange(0, len(expec), step=1))
+
+    # Adding grid and labels
+    plt.grid(True)
+    plt.xlabel("Square")
+    plt.ylabel("Loss")
+
+    # Adding legend
+    plt.legend()
+    plt.title("Loss over different number of games played")
+
+    # Displaying the plot
+    plt.show()
+
+
+def comparison_theorical_empirical_loss_total(layout, circle):
+
+    expec, optimal_policy = markovDecision(layout, circle)
+    expec = np.append(expec, 0)
+    actual = []
+    nSimuls = [10, 100, 1000, 10000, 100000]
+    for nSimul in nSimuls:
+        actual.append(
+            empiric_cost_of_square(layout, circle, optimal_policy.astype(int), nSimul)
+        )
+
+    print(optimal_policy)
+
+    names = ["10", "100", "1000", "10 000", "100 000"]
+    loss = []
+    loss.append(abs(sum(expec) - sum(actual[0])))
+    loss.append(abs(sum(expec) - sum(actual[1])))
+    loss.append(abs(sum(expec) - sum(actual[2])))
+    loss.append(abs(sum(expec) - sum(actual[3])))
+    loss.append(abs(sum(expec) - sum(actual[4])))
+
+    plt.bar(names, loss)
+
+    plt.xlabel("Number of simulations")
+    plt.ylabel("Total Loss")
+
+    # Adding legend
+    plt.legend()
+    plt.title("Loss over different number of games played")
+
+    # Displaying the plot
+    plt.show()
+
+
 def comparison_of_policies_total(layout, circle):
 
     policies = []
@@ -204,13 +312,14 @@ def comparison_of_policies_total(layout, circle):
     policies.append(only_dice_normal)
     policies.append(only_dice_risky)
     policies.append(rand)
+    policies.append([2, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3])
 
     avgnTurns = []
 
     for policy in policies:
         avgnTurns.append(empirical_results(layout, circle, policy))
 
-    names = ["optimal", "safe", "normal", "risky", "random"]
+    names = ["optimal", "safe", "normal", "risky", "random", "custom"]
 
     # Creating the bar plot
     plt.bar(names, avgnTurns)
@@ -242,11 +351,12 @@ def comparison_of_policies_squares(layout, circle):
     policies.append(only_dice_normal)
     policies.append(only_dice_risky)
     policies.append(rand)
+    policies.append([2,1,3,3,3,3,3,3,3,3,3,3,3,3,3])
 
     avgnTurns = []
 
     for policy in policies:
-        avgnTurns.append(empiric_cost_of_square(layout, circle, policy))
+        avgnTurns.append(empiric_cost_of_square(layout, circle, policy, nSimul))
 
     # Generating x-axis values (squares)
     squares = np.arange(len(avgnTurns[0]))
@@ -257,6 +367,7 @@ def comparison_of_policies_squares(layout, circle):
     plt.plot(squares, avgnTurns[2], label="Normal")
     plt.plot(squares, avgnTurns[3], label="Risky")
     plt.plot(squares, avgnTurns[4], label="Random")
+    plt.plot(squares, avgnTurns[5], label="Custom")
 
     plt.xticks(np.arange(0, len(avgnTurns[0]), step=1))
 
@@ -278,12 +389,20 @@ def comparison_of_policies_squares(layout, circle):
 ###############################################################################
 ###############################################################################
 
-def make_plots() :
+def make_plots_results() :
 
-    layout = [0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 3, 0, 0, 0]
+    layout = [0, 0, 4, 0, 4, 0, 2, 1, 0, 0, 3, 0, 0, 3, 0]
     circle = False
-    comparison_theorical_empirical(layout, circle)
-    #comparison_of_policies_total(layout,circle)
-    #comparison_of_policies_squares(layout, circle)
+    comparison_theorical_empirical(layout,circle)
+    comparison_theorical_empirical_multiple_simul(layout,circle)
+    comparison_theorical_empirical_loss_square(layout, circle)
+    comparison_theorical_empirical_loss_total(layout, circle)
 
-make_plots()
+
+def make_plots_policies():
+    layout = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    circle = False
+    comparison_of_policies_total(layout,circle)
+    comparison_of_policies_squares(layout, circle)
+
+make_plots_policies()
